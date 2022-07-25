@@ -40,6 +40,15 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
+Timer? timer;
+
+void initControlPanelTiming() {
+  timer?.cancel();
+  timer = Timer(const Duration(seconds: 4), () => _notifier.value = false);
+}
+
+final ValueNotifier<bool> _notifier = ValueNotifier(false);
+
 class _MainScreenState extends State<MainScreen> {
   late final VideoPlayerController _controller =
       VideoPlayerController.asset('assets/video.mp4')
@@ -47,7 +56,6 @@ class _MainScreenState extends State<MainScreen> {
         ..setLooping(true)
         ..play();
 
-  bool isControlPanelShowing = false;
   @override
   void dispose() {
     _controller.dispose();
@@ -55,44 +63,38 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
-  Timer? timer;
-
-  void initControlPanelTiming() {
-    timer?.cancel();
-    timer = Timer(const Duration(seconds: 4), () {
-      setState(() {
-        isControlPanelShowing = false;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(children: [
-        Positioned.fill(
-            child: GestureDetector(
+      body: ValueListenableBuilder<bool>(
+        valueListenable: _notifier,
+        builder: (context, controlPanelOn, widget) {
+          return Stack(children: [
+            Positioned.fill(
+                child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (!controlPanelOn) {
+                          _notifier.value = true;
+                          initControlPanelTiming();
+                        }
+                      });
+                    },
+                    child: VideoPlayer(_controller))),
+            if (controlPanelOn)
+              ControlPanel(
+                controller: _controller,
                 onTap: () {
-                  setState(() {
-                    if (!isControlPanelShowing) {
-                      isControlPanelShowing = true;
-                      initControlPanelTiming();
-                    }
-                  });
+                  if (controlPanelOn) {
+                    setState(() {
+                      _notifier.value = false;
+                    });
+                  }
                 },
-                child: VideoPlayer(_controller))),
-        if (isControlPanelShowing)
-          ControlPanel(
-            controller: _controller,
-            onTap: () {
-              if (isControlPanelShowing) {
-                setState(() {
-                  isControlPanelShowing = false;
-                });
-              }
-            },
-          )
-      ]),
+              )
+          ]);
+        },
+      ),
     );
   }
 }
@@ -203,6 +205,7 @@ class _ControlPanelState extends State<ControlPanel> {
                               widget._controller.seekTo(
                                   widget._controller.value.position -
                                       const Duration(seconds: 5));
+                              initControlPanelTiming();
                             },
                             icon: const Icon(
                               CupertinoIcons.backward_fill,
@@ -220,6 +223,7 @@ class _ControlPanelState extends State<ControlPanel> {
                                   widget._controller.play();
                                 });
                               }
+                              initControlPanelTiming();
                             },
                             icon: widget._controller.value.isPlaying
                                 ? const Icon(
@@ -234,6 +238,7 @@ class _ControlPanelState extends State<ControlPanel> {
                               widget._controller.seekTo(
                                   widget._controller.value.position +
                                       const Duration(seconds: 5));
+                              initControlPanelTiming();
                             },
                             icon: const Icon(CupertinoIcons.forward_fill,
                                 color: Colors.white)),
