@@ -44,7 +44,7 @@ Timer? timer;
 
 void initControlPanelTiming() {
   timer?.cancel();
-  timer = Timer(const Duration(seconds: 4), () => _notifier.value = false);
+  timer = Timer(const Duration(seconds: 8), () => _notifier.value = false);
 }
 
 final ValueNotifier<bool> _notifier = ValueNotifier(false);
@@ -167,7 +167,7 @@ class _ControlPanelState extends State<ControlPanel> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('captivate lesson chapter 2',
+                  const Text('the beauty of galaxy',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -175,7 +175,7 @@ class _ControlPanelState extends State<ControlPanel> {
                   const SizedBox(
                     height: 2,
                   ),
-                  const Text('by matin ebrahimpanah',
+                  const Text('by james web',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,
